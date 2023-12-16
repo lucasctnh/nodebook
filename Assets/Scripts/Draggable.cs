@@ -6,28 +6,45 @@ using UnityEngine.EventSystems;
 
 public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
 {
-	[Header("Debug")]
-	[SerializeField, ReadOnly] private Canvas canvas;
-	[SerializeField, ReadOnly] private RectTransform rectTransform;
-	[SerializeField, ReadOnly] private Vector2 anchoredPositionBeforeDrag;
+	[Header("Debug: Draggable")]
+	[SerializeField, ReadOnly] protected Canvas canvas;
+	[SerializeField, ReadOnly] protected RectTransform rectTransform;
+	[SerializeField, ReadOnly] protected Vector2 anchoredPositionBeforeDrag;
+	[SerializeField, ReadOnly] protected bool isDragActive;
+	[SerializeField, ReadOnly] protected bool isDragging;
 
-	private void Awake()
+	public RectTransform RectTransform => rectTransform;
+
+	protected virtual void Awake()
 	{
+		isDragActive = true;
 		canvas = GetComponentInParent<Canvas>();
 		rectTransform = GetComponent<RectTransform>();
 	}
 
-	public void OnBeginDrag(PointerEventData eventData)
+	public virtual void OnBeginDrag(PointerEventData eventData)
 	{
+		if (isDragActive == false) return;
+
 		anchoredPositionBeforeDrag = rectTransform.anchoredPosition;
+		isDragging = true;
 	}
 
-	public void OnDrag(PointerEventData eventData)
+	public virtual void OnDrag(PointerEventData eventData)
 	{
+		if (isDragActive == false) return;
 		rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
 	}
 
-	public void OnEndDrag(PointerEventData eventData)
+	public virtual void OnEndDrag(PointerEventData eventData)
+	{
+		if (isDragActive == false) return;
+
+		CheckValidPosition();
+		isDragging = false;
+	}
+
+	public void CheckValidPosition()
 	{
 		Vector2 overlapDir = InfiniteCanvas.Overlap(rectTransform);
 		bool isInsideCanvas = overlapDir == Vector2.zero;

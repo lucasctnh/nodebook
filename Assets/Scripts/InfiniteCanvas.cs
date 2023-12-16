@@ -1,6 +1,7 @@
 using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class InfiniteCanvas : Singleton<InfiniteCanvas>
@@ -10,7 +11,11 @@ public class InfiniteCanvas : Singleton<InfiniteCanvas>
 	[SerializeField] private float uniformGrowIncrement = 25;
 	[Header("References")]
 	[SerializeField] private RectTransform content;
-	//[Header("Debug")]
+	[Header("Debug")]
+	[SerializeField, ReadOnly] private List<Node> nodes = new List<Node>();
+
+	public static RectTransform Content => InstanceIsValid ? Instance.content : null;
+	public static List<Node> Nodes => InstanceIsValid ? Instance.nodes : new List<Node>();
 
 	public static Vector2 Overlap(RectTransform rectTransform)
 	{
@@ -61,8 +66,19 @@ public class InfiniteCanvas : Singleton<InfiniteCanvas>
 		if (growWidth == 0 && growHeight == 0)
 			return false;
 
-		Instance.content.sizeDelta += new Vector2(growWidth, growHeight);
+		Content.sizeDelta += new Vector2(growWidth, growHeight);
 		return true;
+	}
+
+	public static void AddNode(Node node, Vector2 position)
+	{
+		if (node == null) return;
+
+		Node nodeInstance = Instantiate(node, Vector3.zero, Quaternion.identity, Content);
+		Nodes.Add(nodeInstance);
+
+		nodeInstance.RectTransform.position = position;
+		nodeInstance.CheckValidPosition();
 	}
 
 	private void CheckIfCanBeSmaller()
