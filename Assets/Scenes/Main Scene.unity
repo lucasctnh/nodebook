@@ -295,7 +295,7 @@ GameObject:
   - component: {fileID: 604105192}
   - component: {fileID: 604105191}
   m_Layer: 5
-  m_Name: Nodes Panel
+  m_Name: Toolbar Panel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -737,6 +737,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b9334503010c8c4194fcdfc1bac796c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dontDestroyOnLoad: 0
+  framesToWaitWhenGrowing: 25
+  uniformGrowIncrement: 25
+  content: {fileID: 777641046}
 --- !u!1 &1352299791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1240,7 +1244,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c75f5b39f1b88b49924bef305dbbafb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  content: {fileID: 777641046}
+  canvas: {fileID: 0}
+  rectTransform: {fileID: 0}
+  anchoredPositionBeforeDrag: {x: 0, y: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

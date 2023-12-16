@@ -1,30 +1,25 @@
+using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Draggable : MonoBehaviour, IDragHandler
+public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
 {
-	public RectTransform content;
-	private Canvas canvas;
-	private RectTransform rectTransform;
+	[Header("Debug")]
+	[SerializeField, ReadOnly] private Canvas canvas;
+	[SerializeField, ReadOnly] private RectTransform rectTransform;
+	[SerializeField, ReadOnly] private Vector2 anchoredPositionBeforeDrag;
 
 	private void Awake()
 	{
 		canvas = GetComponentInParent<Canvas>();
 		rectTransform = GetComponent<RectTransform>();
 	}
-	private void Update()
+
+	public void OnBeginDrag(PointerEventData eventData)
 	{
-		if (IsRectTransformInsideContent(content, rectTransform))
-		{
-			Debug.Log("Element is contained in Content");
-		}
-		else
-		{
-			Debug.Log("Element is not contained in Content");
-			GrowContentSize();
-		}
+		anchoredPositionBeforeDrag = rectTransform.anchoredPosition;
 	}
 
 	public void OnDrag(PointerEventData eventData)
@@ -32,28 +27,12 @@ public class Draggable : MonoBehaviour, IDragHandler
 		rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
 	}
 
-	private bool IsRectTransformInsideContent(RectTransform content, RectTransform rectTransform)
+	public void OnEndDrag(PointerEventData eventData)
 	{
-		Vector3[] corners = new Vector3[4];
-		rectTransform.GetWorldCorners(corners);
+		Vector2 overlapDir = InfiniteCanvas.Overlap(rectTransform);
+		bool isInsideCanvas = overlapDir == Vector2.zero;
 
-		foreach (Vector3 corner in corners)
-		{
-			// I am not sure (its not documented) but I think that if dont pass
-			// the Camera param Unity will convert into world space
-			// so, if you pass the param you need to first convert the points into Screen space
-			// Vector3 screenCorner = Camera.main.WorldToScreenPoint(corner);
-
-			if (!RectTransformUtility.RectangleContainsScreenPoint(content, corner))
-				return false;
-		}
-
-		return true;
-	}
-
-	private void GrowContentSize()
-	{
-		// just a test
-		content.sizeDelta += new Vector2(50, 50);
+		if (isInsideCanvas == false & InfiniteCanvas.TryGrowContentSize(overlapDir, rectTransform) == false)
+			rectTransform.anchoredPosition = anchoredPositionBeforeDrag;
 	}
 }
