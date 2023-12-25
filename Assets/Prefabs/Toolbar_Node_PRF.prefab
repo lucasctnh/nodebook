@@ -94,7 +94,9 @@ MonoBehaviour:
   anchoredPositionBeforeDrag: {x: 0, y: 0}
   isDragActive: 0
   isDragging: 0
-  toolbarVisual: {fileID: 7647467190753264185}
+  toolbarVisuals:
+  - {fileID: 7647467190753264185}
+  - {fileID: 1135312552200219731}
   nodePrefab: {fileID: 0}
   nodeInstance: {fileID: 0}
   initialPosition: {x: 0, y: 0, z: 0}

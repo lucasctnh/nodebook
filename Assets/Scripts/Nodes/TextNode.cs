@@ -13,15 +13,22 @@ public class TextNode : Node
 	{
 		base.Awake();
 		textField = GetComponent<TMP_InputField>();
-		textField.interactable = false;
+
+		DeselectNode();
 	}
 
-	protected override void SelectNode()
+	public override void SelectNode()
 	{
 		base.SelectNode();
 		textField.interactable = true;
 
 		if (textField.text == string.Empty)
 			textField.Select();
+	}
+
+	public override void DeselectNode()
+	{
+		base.DeselectNode();
+		textField.interactable = false;
 	}
 }

@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class ToolbarNode : Draggable
 {
 	[Header("References")]
-	[SerializeField] private Image toolbarVisual;
+	[SerializeField] private List<Image> toolbarVisuals = new List<Image>();
 	[SerializeField] private Node nodePrefab;
 	[Header("Debug: ToolbarNode")]
 	[SerializeField, ReadOnly] private Node nodeInstance;
@@ -24,7 +24,7 @@ public class ToolbarNode : Draggable
 	{
 		base.OnBeginDrag(eventData);
 
-		toolbarVisual.enabled = false;
+		HideVisuals();
 		nodeInstance = Instantiate(nodePrefab, rectTransform.position, Quaternion.identity, rectTransform);
 	}
 
@@ -32,12 +32,24 @@ public class ToolbarNode : Draggable
 	{
 		base.OnEndDrag(eventData);
 
-		toolbarVisual.enabled = true;
+		ShowVisuals();
 
-		// TODO: check if inside canvas before
+		// TODO: check if left toolbar space before creating node
 		InfiniteCanvas.AddNode(nodeInstance, rectTransform.position);
 
 		rectTransform.anchoredPosition = initialPosition;
 		Destroy(nodeInstance.gameObject);
+	}
+
+	private void HideVisuals()
+	{
+		foreach (var visual in toolbarVisuals)
+			visual.enabled = false;
+	}
+
+	private void ShowVisuals()
+	{
+		foreach (var visual in toolbarVisuals)
+			visual.enabled = true;
 	}
 }
