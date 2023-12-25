@@ -21,6 +21,12 @@ public class PageNode : Node
 	// the select node is not called on clicking on input field directly, but also is not calling the event system select
 	public override void SelectNode()
 	{
+		if (isSelected)
+		{
+			ViewManager.ShowPageCanvas();
+			return;
+		}
+
 		base.SelectNode();
 		textField.interactable = true;
 

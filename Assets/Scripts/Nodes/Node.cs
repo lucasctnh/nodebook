@@ -9,22 +9,6 @@ public abstract class Node : Draggable, IPointerClickHandler//, INodeDeselected
 	[Header("Debug: Node")]
 	[SerializeField, ReadOnly] protected bool isSelected;
 
-	protected bool IsSelected
-	{
-		get => isSelected;
-		set
-		{
-			isSelected = value;
-			isDragActive = !value;
-		}
-	}
-
-	protected virtual void Update()
-	{
-		if (EventSystem.current != null && EventSystem.current.currentSelectedGameObject == null && IsSelected)
-			DeselectNode();
-	}
-
 	public virtual void OnPointerClick(PointerEventData eventData)
 	{
 		if (isDragging) return;
@@ -33,11 +17,15 @@ public abstract class Node : Draggable, IPointerClickHandler//, INodeDeselected
 
 	public virtual void SelectNode()
 	{
-		IsSelected = true;
+		InfiniteCanvas.DeselectAllNodes();
+
+		isSelected = true;
+		isDragActive = false;
 	}
 
 	public virtual void DeselectNode()
 	{
-		IsSelected = false;
+		isSelected = false;
+		isDragActive = true;
 	}
 }

@@ -1,12 +1,11 @@
 using NaughtyAttributes;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class InfiniteCanvas : Singleton<InfiniteCanvas>
+public class InfiniteCanvas : BaseCanvas<InfiniteCanvas>, IPointerClickHandler
 {
-	[Header("Settingfs")]
+	[Header("Settings")]
 	[SerializeField] private int framesToWaitWhenGrowing = 25;
 	[SerializeField] private float uniformGrowIncrement = 25;
 	[Header("References")]
@@ -17,8 +16,16 @@ public class InfiniteCanvas : Singleton<InfiniteCanvas>
 	public static RectTransform Content => InstanceIsValid ? Instance.content : null;
 	public static List<Node> Nodes => InstanceIsValid ? Instance.nodes : new List<Node>();
 
+	#region Static Methods
+	/// <summary>
+	/// Checks if a rectTransform is overlapping with the viewbox area of the canvas. Used to grow the viewport size when needed.
+	/// </summary>
+	/// <param name="rectTransform"></param>
+	/// <returns></returns>
 	public static Vector2 Overlap(RectTransform rectTransform)
 	{
+		if (InstanceIsValid == false) return Vector2.zero;
+
 		Vector3[] corners = new Vector3[4];
 		rectTransform.GetWorldCorners(corners);
 
@@ -52,8 +59,16 @@ public class InfiniteCanvas : Singleton<InfiniteCanvas>
 		return resultDir;
 	}
 
+	/// <summary>
+	/// Tries to grow the viewbox size to fit all the nodes.
+	/// </summary>
+	/// <param name="growDirection"></param>
+	/// <param name="rectOutsideCanvas"></param>
+	/// <returns></returns>
 	public static bool TryGrowContentSize(Vector2 growDirection, RectTransform rectOutsideCanvas)
 	{
+		if (InstanceIsValid == false) return false;
+
 		float growWidth = 0;
 		float growHeight = 0;
 
@@ -70,8 +85,14 @@ public class InfiniteCanvas : Singleton<InfiniteCanvas>
 		return true;
 	}
 
+	/// <summary>
+	/// Adds a new node on this canvas.
+	/// </summary>
+	/// <param name="node"></param>
+	/// <param name="position"></param>
 	public static void AddNode(Node node, Vector2 position)
 	{
+		if (InstanceIsValid == false) return;
 		if (node == null) return;
 
 		Node nodeInstance = Instantiate(node, Vector3.zero, Quaternion.identity, Content);
@@ -81,8 +102,37 @@ public class InfiniteCanvas : Singleton<InfiniteCanvas>
 		nodeInstance.CheckValidPosition();
 	}
 
+	/// <summary>
+	/// Deselects all nodes in this canvas list.
+	/// </summary>
+	public static void DeselectAllNodes()
+	{
+		if (InstanceIsValid == false) return;
+
+		foreach (var node in Nodes)
+			node.DeselectNode();
+	}
+	#endregion
+
+	#region Interface Implementation
+	public void OnPointerClick(PointerEventData eventData)
+	{
+		DeselectAllNodes();
+	}
+	#endregion
+
+	#region Override Methods
+	protected override void HideInternal()
+	{
+		DeselectAllNodes();
+		base.HideInternal();
+	}
+	#endregion
+
+	#region Private Methods
 	private void CheckIfCanBeSmaller()
 	{
-
+		// TODO: reduce canvas size when possible, maybe test if a refresh using base values then growing works
 	}
+	#endregion
 }
