@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class TextNode : Node
+public class PageNode : Node
 {
-	[Header("Debug: TextNode")]
+	[Header("Debug: PageNode")]
 	[SerializeField, ReadOnly] private TMP_InputField textField;
 
 	protected override void Awake()
 	{
 		base.Awake();
-		textField = GetComponent<TMP_InputField>();
+		textField = GetComponentInChildren<TMP_InputField>();
 		textField.interactable = false;
 	}
 
@@ -21,7 +21,7 @@ public class TextNode : Node
 		base.SelectNode();
 		textField.interactable = true;
 
-		if (textField.text == string.Empty)
+		if (textField.text == string.Empty || textField.text == "New Page")
 			textField.Select();
 	}
 }
