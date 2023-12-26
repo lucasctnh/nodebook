@@ -7,7 +7,6 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 	[Header("Singleton")]
 	[SerializeField] private bool dontDestroyOnLoad = true;
 
-	#region Properties
 	private static T instance;
 	public static T Instance
 	{
@@ -21,10 +20,9 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 			return instance;
 		}
 	}
-	public static bool InstanceIsValid => Instance != null;
-	#endregion
 
-	#region Unity Messages
+	public static bool IsInstanceValid => Instance != null;
+
 	protected virtual bool Awake()
 	{
 		if (Instance != null && Instance != this)
@@ -32,9 +30,10 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 			Destroy(this);
 			return false;
 		}
+
 		if (dontDestroyOnLoad)
 			DontDestroyOnLoad(gameObject);
+
 		return true;
 	}
-	#endregion
 }

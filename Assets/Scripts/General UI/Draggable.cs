@@ -1,11 +1,20 @@
 using NaughtyAttributes;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
 public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
 {
+	public delegate void DragEvent(Draggable draggable);
+	public static event DragEvent OnAnyBeginDrag;
+	public static event DragEvent OnAnyEndDrag;
+
+	[Header("Settings: Draggable")]
+	[SerializeField] protected bool useSelfRaycast = true;
+	[SerializeField, HideIf("useSelfRaycast")] protected ExternalGraphics externalGraphics;
 	[Header("Debug: Draggable")]
 	[SerializeField, ReadOnly] protected Canvas canvas;
 	[SerializeField, ReadOnly] protected RectTransform rectTransform;
@@ -20,6 +29,23 @@ public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDra
 		isDragActive = true;
 		canvas = GetComponentInParent<Canvas>();
 		rectTransform = GetComponent<RectTransform>();
+
+		if (!useSelfRaycast)
+		{
+			externalGraphics.OnBeginedDrag += OnBeginDrag;
+			externalGraphics.OnEndedDrag += OnEndDrag;
+			externalGraphics.OnDragging += OnDrag;
+		}
+	}
+
+	protected virtual void OnDestroy()
+	{
+		if (!useSelfRaycast)
+		{
+			externalGraphics.OnBeginedDrag -= OnBeginDrag;
+			externalGraphics.OnEndedDrag -= OnEndDrag;
+			externalGraphics.OnDragging -= OnDrag;
+		}
 	}
 
 	public virtual void OnBeginDrag(PointerEventData eventData)
@@ -28,6 +54,8 @@ public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDra
 
 		anchoredPositionBeforeDrag = rectTransform.anchoredPosition;
 		isDragging = true;
+
+		OnAnyBeginDrag?.Invoke(this);
 	}
 
 	public virtual void OnDrag(PointerEventData eventData)
@@ -40,16 +68,7 @@ public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDra
 	{
 		if (isDragActive == false) return;
 
-		CheckValidPosition();
 		isDragging = false;
-	}
-
-	public void CheckValidPosition()
-	{
-		Vector2 overlapDir = InfiniteCanvas.Overlap(rectTransform);
-		bool isInsideCanvas = overlapDir == Vector2.zero;
-
-		if (isInsideCanvas == false & InfiniteCanvas.TryGrowContentSize(overlapDir, rectTransform) == false)
-			rectTransform.anchoredPosition = anchoredPositionBeforeDrag;
+		OnAnyEndDrag?.Invoke(this);
 	}
 }

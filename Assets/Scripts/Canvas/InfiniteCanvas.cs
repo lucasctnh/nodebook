@@ -1,20 +1,51 @@
 using NaughtyAttributes;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class InfiniteCanvas : BaseCanvas<InfiniteCanvas>, IPointerClickHandler
+public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
-	[Header("Settings")]
-	[SerializeField] private int framesToWaitWhenGrowing = 25;
-	[SerializeField] private float uniformGrowIncrement = 25;
+	public delegate void InfiniteCanvasCheckOverlapEvent(bool hasOverlaped);
+	public delegate void InfiniteCanvasEvent(InfiniteCanvas infiniteCanvas);
+	public static event InfiniteCanvasEvent OnAnyInfiniteCanvasShow;
+	public static event InfiniteCanvasEvent OnPointerEnterCanvas;
+	public static event InfiniteCanvasEvent OnPointerExitCanvas;
+	public static event InfiniteCanvasCheckOverlapEvent OnPositionCheckReturned;
+
 	[Header("References")]
 	[SerializeField] private RectTransform content;
+
+	[Header("Settings")]
+	[SerializeField] private int framesToWaitWhenGrowing = 25;
 	[Header("Debug")]
 	[SerializeField, ReadOnly] private List<Node> nodes = new List<Node>();
+	[SerializeField] private float uniformGrowIncrement = 25;
 
-	public static RectTransform Content => InstanceIsValid ? Instance.content : null;
-	public static List<Node> Nodes => InstanceIsValid ? Instance.nodes : new List<Node>();
+	public RectTransform Content => content;
+	public List<Node> Nodes => nodes;
+
+	#region Unity Messages
+	protected override void Awake()
+	{
+		base.Awake();
+
+		TopPanel.OnShowInfiniteCanvasEvent += Show;
+		PageCanvas.OnAnyPageCanvasShow += Hide;
+		ToolbarNode.OnAnyNodeShouldBeCreated += AddNode;
+		Node.OnAnyNodeSelected += DeselectAllNodes;
+		Node.OnAnyNodeRequestOverlap += CheckDraggablePosition;
+	}
+
+	private void OnDestroy()
+	{
+		TopPanel.OnShowInfiniteCanvasEvent -= Show;
+		PageCanvas.OnAnyPageCanvasShow -= Hide;
+		ToolbarNode.OnAnyNodeShouldBeCreated -= AddNode;
+		Node.OnAnyNodeSelected -= DeselectAllNodes;
+		Node.OnAnyNodeRequestOverlap -= CheckDraggablePosition;
+	}
+	#endregion
 
 	#region Static Methods
 	/// <summary>
@@ -22,10 +53,8 @@ public class InfiniteCanvas : BaseCanvas<InfiniteCanvas>, IPointerClickHandler
 	/// </summary>
 	/// <param name="rectTransform"></param>
 	/// <returns></returns>
-	public static Vector2 Overlap(RectTransform rectTransform)
+	public Vector2 Overlap(RectTransform rectTransform)
 	{
-		if (InstanceIsValid == false) return Vector2.zero;
-
 		Vector3[] corners = new Vector3[4];
 		rectTransform.GetWorldCorners(corners);
 
@@ -38,7 +67,7 @@ public class InfiniteCanvas : BaseCanvas<InfiniteCanvas>, IPointerClickHandler
 			// Vector3 screenCorner = Camera.main.WorldToScreenPoint(corner);
 
 			cornersOutside[i] = false;
-			if (!RectTransformUtility.RectangleContainsScreenPoint(Instance.content, corners[i]))
+			if (!RectTransformUtility.RectangleContainsScreenPoint(content, corners[i]))
 			{
 				// corner 0 is left-bot, 1 is left-top, 2 is right-top, 3 is right-bot
 				cornersOutside[i] = true;
@@ -65,17 +94,15 @@ public class InfiniteCanvas : BaseCanvas<InfiniteCanvas>, IPointerClickHandler
 	/// <param name="growDirection"></param>
 	/// <param name="rectOutsideCanvas"></param>
 	/// <returns></returns>
-	public static bool TryGrowContentSize(Vector2 growDirection, RectTransform rectOutsideCanvas)
+	public bool TryGrowContentSize(Vector2 growDirection, RectTransform rectOutsideCanvas)
 	{
-		if (InstanceIsValid == false) return false;
-
 		float growWidth = 0;
 		float growHeight = 0;
 
 		if (growDirection.x == 1)
-			growWidth = rectOutsideCanvas.sizeDelta.x + Instance.uniformGrowIncrement;
+			growWidth = rectOutsideCanvas.sizeDelta.x + uniformGrowIncrement;
 		if (growDirection.y == 1)
-			growHeight = rectOutsideCanvas.sizeDelta.y + Instance.uniformGrowIncrement;
+			growHeight = rectOutsideCanvas.sizeDelta.y + uniformGrowIncrement;
 
 		// TODO: fix case where object is invalid on one dir
 		if (growWidth == 0 && growHeight == 0)
@@ -90,27 +117,40 @@ public class InfiniteCanvas : BaseCanvas<InfiniteCanvas>, IPointerClickHandler
 	/// </summary>
 	/// <param name="node"></param>
 	/// <param name="position"></param>
-	public static void AddNode(Node node, Vector2 position)
+	public void AddNode(Node node, Vector2 position)
 	{
-		if (InstanceIsValid == false) return;
+		if (IsShown == false) return;
 		if (node == null) return;
 
 		Node nodeInstance = Instantiate(node, Vector3.zero, Quaternion.identity, Content);
+		nodeInstance.InitializeNode(this);
 		Nodes.Add(nodeInstance);
 
 		nodeInstance.RectTransform.position = position;
-		nodeInstance.CheckValidPosition();
+		nodeInstance.RequestValidPositionCheck();
 	}
 
 	/// <summary>
 	/// Deselects all nodes in this canvas list.
 	/// </summary>
-	public static void DeselectAllNodes()
+	public void DeselectAllNodes()
 	{
-		if (InstanceIsValid == false) return;
-
 		foreach (var node in Nodes)
 			node.DeselectNode();
+	}
+	#endregion
+
+	#region Override Methods
+	public override void Show()
+	{
+		base.Show();
+		OnAnyInfiniteCanvasShow?.Invoke(this);
+	}
+
+	public override void Hide()
+	{
+		DeselectAllNodes();
+		base.Hide();
 	}
 	#endregion
 
@@ -119,20 +159,36 @@ public class InfiniteCanvas : BaseCanvas<InfiniteCanvas>, IPointerClickHandler
 	{
 		DeselectAllNodes();
 	}
-	#endregion
 
-	#region Override Methods
-	protected override void HideInternal()
+	public void OnPointerEnter(PointerEventData eventData)
 	{
-		DeselectAllNodes();
-		base.HideInternal();
+		OnPointerEnterCanvas?.Invoke(this);
+	}
+
+	public void OnPointerExit(PointerEventData eventData)
+	{
+		OnPointerExitCanvas?.Invoke(this);
 	}
 	#endregion
 
 	#region Private Methods
+	private void CheckDraggablePosition(Draggable draggable)
+	{
+		RectTransform rectTransform = draggable.RectTransform;
+
+		Vector2 overlapDir = Overlap(rectTransform);
+		bool isInsideCanvas = overlapDir == Vector2.zero;
+
+		bool isPositionOverlaped = isInsideCanvas == false & TryGrowContentSize(overlapDir, rectTransform) == false;
+		OnPositionCheckReturned?.Invoke(isPositionOverlaped);
+	}
+
 	private void CheckIfCanBeSmaller()
 	{
 		// TODO: reduce canvas size when possible, maybe test if a refresh using base values then growing works
 	}
+
+	private void DeselectAllNodes(Node node) => DeselectAllNodes();
+	private void Hide(PageCanvas pageCanvas) => Hide();
 	#endregion
 }

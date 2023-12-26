@@ -6,13 +6,16 @@ using UnityEngine;
 
 public class PageNode : Node
 {
+	public delegate void PageNodeEvent(PageNode node);
+	public static event PageNodeEvent OnPageNodeSelected;
+
 	[Header("Debug: PageNode")]
 	[SerializeField, ReadOnly] private TMP_InputField textField;
 
 	protected override void Awake()
 	{
 		base.Awake();
-		textField = GetComponentInChildren<TMP_InputField>();
+		textField = GetComponentInChildren<TMP_InputField>(true);
 
 		DeselectNode();
 	}
@@ -23,7 +26,7 @@ public class PageNode : Node
 	{
 		if (isSelected)
 		{
-			ViewManager.ShowPageCanvas();
+			OnPageNodeSelected?.Invoke(this);
 			return;
 		}
 

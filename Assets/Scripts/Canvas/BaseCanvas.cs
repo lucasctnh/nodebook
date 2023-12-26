@@ -2,39 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class BaseCanvas<T> : Singleton<T> where T : BaseCanvas<T>
+public abstract class BaseCanvas : MonoBehaviour
 {
 	[Header("Canvas Settings")]
 	[SerializeField] private bool startsHidden;
+	[SerializeField] private bool isShown;
 
-	protected override bool Awake()
+	public bool IsShown => isShown;
+
+	protected virtual void Awake()
 	{
-		bool response = base.Awake();
+		isShown = true;
 
 		if (startsHidden)
 			Hide();
-
-		return response;
 	}
 
-	public static void Hide()
-	{
-		if (InstanceIsValid == false) return;
-		Instance.HideInternal();
-	}
-
-	public static void Show()
-	{
-		if (InstanceIsValid == false) return;
-		Instance.ShowInternal();
-	}
-
-	protected virtual void HideInternal()
-	{
-		gameObject.SetActive(false);
-	}
-	protected virtual void ShowInternal()
+	public virtual void Show()
 	{
 		gameObject.SetActive(true);
+		isShown = true;
+	}
+
+	public virtual void Hide()
+	{
+		gameObject.SetActive(false);
+		isShown = false;
 	}
 }

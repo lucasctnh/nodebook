@@ -12,7 +12,7 @@ public class TextNode : Node
 	protected override void Awake()
 	{
 		base.Awake();
-		textField = GetComponent<TMP_InputField>();
+		textField = GetComponentInChildren<TMP_InputField>(true);
 
 		DeselectNode();
 	}
