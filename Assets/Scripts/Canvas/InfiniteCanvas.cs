@@ -31,6 +31,7 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		base.Awake();
 
 		TopPanel.OnShowInfiniteCanvasEvent += Show;
+		CanvasNode.OnCanvasNodeSelected += Show;
 		PageCanvas.OnAnyPageCanvasShow += Hide;
 		ToolbarNode.OnAnyNodeShouldBeCreated += AddNode;
 		Node.OnAnyNodeSelected += DeselectAllNodes;
@@ -40,6 +41,7 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	private void OnDestroy()
 	{
 		TopPanel.OnShowInfiniteCanvasEvent -= Show;
+		CanvasNode.OnCanvasNodeSelected -= Show;
 		PageCanvas.OnAnyPageCanvasShow -= Hide;
 		ToolbarNode.OnAnyNodeShouldBeCreated -= AddNode;
 		Node.OnAnyNodeSelected -= DeselectAllNodes;
@@ -190,5 +192,6 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 
 	private void DeselectAllNodes(Node node) => DeselectAllNodes();
 	private void Hide(PageCanvas pageCanvas) => Hide();
+	private void Show(CanvasNode canvasNode) => Show();
 	#endregion
 }
