@@ -12,6 +12,8 @@ public class PageNode : Node
 	[Header("Debug: PageNode")]
 	[SerializeField, ReadOnly] private TMP_InputField textField;
 
+	public override NodeType NodeType => NodeType.Page;
+
 	protected override void Awake()
 	{
 		base.Awake();

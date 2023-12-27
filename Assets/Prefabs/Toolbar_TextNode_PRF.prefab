@@ -10,7 +10,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 248000297634127729, guid: c256b8c605fb6cf46aad53b339529dad, type: 3}
       propertyPath: m_Name
-      value: Toolbar_TextNode_PRF Variant
+      value: Toolbar_TextNode_PRF
+      objectReference: {fileID: 0}
+    - target: {fileID: 840782622224082587, guid: c256b8c605fb6cf46aad53b339529dad, type: 3}
+      propertyPath: nodeType
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 840782622224082587, guid: c256b8c605fb6cf46aad53b339529dad, type: 3}
       propertyPath: nodePrefab

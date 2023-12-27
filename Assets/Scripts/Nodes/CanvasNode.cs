@@ -12,6 +12,8 @@ public class CanvasNode : Node
 	[Header("Debug: PageNode")]
 	[SerializeField, ReadOnly] private TMP_InputField textField;
 
+	public override NodeType NodeType => NodeType.Canvas;
+
 	protected override void Awake()
 	{
 		base.Awake();

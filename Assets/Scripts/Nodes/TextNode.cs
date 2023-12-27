@@ -9,6 +9,8 @@ public class TextNode : Node
 	[Header("Debug: TextNode")]
 	[SerializeField, ReadOnly] private TMP_InputField textField;
 
+	public override NodeType NodeType => NodeType.Text;
+
 	protected override void Awake()
 	{
 		base.Awake();

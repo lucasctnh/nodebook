@@ -1,4 +1,5 @@
 using NaughtyAttributes;
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -11,17 +12,18 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	public static event InfiniteCanvasEvent OnAnyInfiniteCanvasShow;
 	public static event InfiniteCanvasEvent OnPointerEnterCanvas;
 	public static event InfiniteCanvasEvent OnPointerExitCanvas;
-	public static event InfiniteCanvasCheckOverlapEvent OnPositionCheckReturned;
 
 	[Header("References")]
 	[SerializeField] private RectTransform content;
-
+	[SerializeField] private NodesLibrary nodesLibrary;
 	[Header("Settings")]
 	[SerializeField] private int framesToWaitWhenGrowing = 25;
+	[SerializeField] private float uniformGrowIncrement = 25;
 	[Header("Debug")]
 	[SerializeField, ReadOnly] private List<Node> nodes = new List<Node>();
-	[SerializeField] private float uniformGrowIncrement = 25;
+	[SerializeField, ReadOnly] private CanvasData canvasData;
 
+	public CanvasData CanvasData => canvasData;
 	public RectTransform Content => content;
 	public List<Node> Nodes => nodes;
 
@@ -35,7 +37,8 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		PageCanvas.OnAnyPageCanvasShow += Hide;
 		ToolbarNode.OnAnyNodeShouldBeCreated += AddNode;
 		Node.OnAnyNodeSelected += DeselectAllNodes;
-		Node.OnAnyNodeRequestOverlap += CheckDraggablePosition;
+		Node.OnAnyNodeDragEnd += CheckValidPosition;
+		NodeData.OnRegeneratedId += SaveNodesList;
 	}
 
 	private void OnDestroy()
@@ -45,7 +48,13 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		PageCanvas.OnAnyPageCanvasShow -= Hide;
 		ToolbarNode.OnAnyNodeShouldBeCreated -= AddNode;
 		Node.OnAnyNodeSelected -= DeselectAllNodes;
-		Node.OnAnyNodeRequestOverlap -= CheckDraggablePosition;
+		Node.OnAnyNodeDragEnd -= CheckValidPosition;
+		NodeData.OnRegeneratedId -= SaveNodesList;
+	}
+
+	private void Start()
+	{
+		LoadHomeData();
 	}
 	#endregion
 
@@ -115,7 +124,7 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	}
 
 	/// <summary>
-	/// Adds a new node on this canvas.
+	/// Adds a new node on this canvas using position.
 	/// </summary>
 	/// <param name="node"></param>
 	/// <param name="position"></param>
@@ -125,11 +134,37 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		if (node == null) return;
 
 		Node nodeInstance = Instantiate(node, Vector3.zero, Quaternion.identity, Content);
-		nodeInstance.InitializeNode(this);
 		Nodes.Add(nodeInstance);
 
 		nodeInstance.RectTransform.position = position;
-		nodeInstance.RequestValidPositionCheck();
+		CheckValidPosition(nodeInstance);
+
+		nodeInstance.InitializeNode(this);
+		SaveNodesList();
+	}
+
+	/// <summary>
+	/// Adds a new node on this canvas using a loaded node data.
+	/// </summary>
+	/// <param name="node"></param>
+	/// <param name="position"></param>
+	public void AddNode(Node node, NodeData nodeData)
+	{
+		if (IsShown == false) return;
+		if (node == null) return;
+
+		Node nodeInstance = Instantiate(node, Vector3.zero, Quaternion.identity, Content);
+		Nodes.Add(nodeInstance);
+
+		nodeInstance.InitializeNode(this, nodeData);
+		nodeInstance.RectTransform.anchoredPosition = nodeData.AnchoredPosition;
+
+		// HACK: skip a frame to compute the position correctly
+		StartCoroutine(Coroutines.DoAfterFrames(1, () =>
+		{
+			CheckValidPosition(nodeInstance);
+			SaveNodesList();
+		}));
 	}
 
 	/// <summary>
@@ -174,15 +209,15 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	#endregion
 
 	#region Private Methods
-	private void CheckDraggablePosition(Draggable draggable)
+	private void CheckValidPosition(Node nodeInstance)
 	{
-		RectTransform rectTransform = draggable.RectTransform;
+		RectTransform rectTransform = nodeInstance.RectTransform;
 
 		Vector2 overlapDir = Overlap(rectTransform);
 		bool isInsideCanvas = overlapDir == Vector2.zero;
 
 		bool isPositionOverlaped = isInsideCanvas == false & TryGrowContentSize(overlapDir, rectTransform) == false;
-		OnPositionCheckReturned?.Invoke(isPositionOverlaped);
+		nodeInstance.CheckValidPosition(isPositionOverlaped);
 	}
 
 	private void CheckIfCanBeSmaller()
@@ -193,5 +228,40 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	private void DeselectAllNodes(Node node) => DeselectAllNodes();
 	private void Hide(PageCanvas pageCanvas) => Hide();
 	private void Show(CanvasNode canvasNode) => Show();
+
+	private void LoadHomeData()
+	{
+		canvasData = SaveManager.Load<HomeData>(HomeData.IdStatic);
+
+		if (canvasData == null)
+		{
+			canvasData = new HomeData();
+			canvasData.HasInitialized = true;
+		}
+
+		if (canvasData.Nodes != null && canvasData.Nodes.Length > 0)
+		{
+			for (int i = 0; i < canvasData.Nodes.Length; i++)
+			{
+				string nodeId = canvasData.Nodes[i];
+				NodeData nodeData = SaveManager.Load<NodeData>(nodeId);
+				AddNode(nodesLibrary.Library[nodeData.Type], nodeData);
+			}
+		}
+	}
+
+	private void SaveNodesList()
+	{
+		if (canvasData == null) return;
+		if (Nodes == null) return;
+		if (Nodes.Count <= 0) return;
+
+		// using a temporary array because save data will only be saved automatically
+		// when actually changing the array values, not its children
+		string[] tempNodes = new string[Nodes.Count];
+		for (int i = 0; i < Nodes.Count; i++)
+			tempNodes[i] = Nodes[i].NodeData.Id;
+		canvasData.Nodes = tempNodes;
+	}
 	#endregion
 }

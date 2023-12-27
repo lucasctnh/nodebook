@@ -15,7 +15,15 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 			if (instance != null)
 				return instance;
 
-			instance = (T)FindObjectOfType(typeof(T));
+			try
+			{
+				instance = (T)FindObjectOfType(typeof(T));
+			}
+			catch (System.Exception e)
+			{
+				//Debug.LogError($"Error grabbing Singleton instance: {e}");
+				return null;
+			}
 
 			return instance;
 		}

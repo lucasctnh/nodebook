@@ -14,7 +14,8 @@ public class ToolbarNode : Draggable
 
 	[Header("References")]
 	[SerializeField] private List<Image> toolbarVisuals = new List<Image>();
-	[SerializeField] private Node nodePrefab;
+	[SerializeField] private NodeType nodeType;
+	[SerializeField] private NodesLibrary nodesLibrary;
 	[Header("Debug: ToolbarNode")]
 	[SerializeField, ReadOnly] private Node nodeInstance;
 	[SerializeField, ReadOnly] private Vector3 initialPosition;
@@ -53,7 +54,7 @@ public class ToolbarNode : Draggable
 		{
 			HideVisuals();
 			if (nodeInstance == null)
-				nodeInstance = Instantiate(nodePrefab, rectTransform.position, Quaternion.identity, rectTransform);
+				nodeInstance = Instantiate(nodesLibrary.Library[nodeType], rectTransform.position, Quaternion.identity, rectTransform);
 		}
 		else
 		{

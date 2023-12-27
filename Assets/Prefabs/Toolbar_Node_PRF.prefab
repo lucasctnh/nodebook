@@ -99,7 +99,8 @@ MonoBehaviour:
   toolbarVisuals:
   - {fileID: 7647467190753264185}
   - {fileID: 1135312552200219731}
-  nodePrefab: {fileID: 0}
+  nodeType: 0
+  nodesLibrary: {fileID: 11400000, guid: 5365c7ff7247d244a9d74209ddaf24cc, type: 2}
   nodeInstance: {fileID: 0}
   initialPosition: {x: 0, y: 0, z: 0}
   isPointerOnCanvas: 0
