@@ -42,6 +42,16 @@ public class NodeData : ISaveData
 		Id = SaveUniqueKey.GenerateKey($"{ParentCanvasId}_{AnchoredPosition}_{Type}", Type.ToString());
 		HasInitialized = true;
 	}
+	public NodeData(NodeType type, Vector2 anchoredPosition, string parentCanvasId, string name)
+	{
+		Type = type;
+		AnchoredPosition = anchoredPosition;
+		ParentCanvasId = parentCanvasId;
+		Name = name;
+
+		Id = SaveUniqueKey.GenerateKey($"{ParentCanvasId}_{AnchoredPosition}_{Type}", Type.ToString());
+		HasInitialized = true;
+	}
 
 	public void RegenerateId()
 	{

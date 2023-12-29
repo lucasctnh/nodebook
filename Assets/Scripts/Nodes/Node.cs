@@ -71,7 +71,7 @@ public abstract class Node : Draggable, IPointerClickHandler
 	#region Override Methods
 	public override void OnEndDrag(PointerEventData eventData)
 	{
-		base.OnDrag(eventData);
+		base.OnEndDrag(eventData);
 
 		if (nodeData != null)
 		{
@@ -88,9 +88,15 @@ public abstract class Node : Draggable, IPointerClickHandler
 	{
 		parentCanvas = canvas;
 		if (nodeData != null)
+		{
 			this.nodeData = nodeData;
+			HandleLoadData();
+		}
 		else
+		{
 			this.nodeData = new NodeData(NodeType, rectTransform.anchoredPosition, parentCanvas.CanvasData.Id);
+			HandleNewData();
+		}
 
 		ActiveFunctionalNode(true);
 	}
@@ -131,7 +137,7 @@ public abstract class Node : Draggable, IPointerClickHandler
 	#endregion
 
 	#region Protected Methods
-	protected void ActiveFunctionalNode(bool shouldActive)
+	protected virtual void ActiveFunctionalNode(bool shouldActive)
 	{
 		visualNode.SetActive(!shouldActive);
 		functionalNode.SetActive(shouldActive);
@@ -140,5 +146,8 @@ public abstract class Node : Draggable, IPointerClickHandler
 		if (!useSelfRaycast)
 			externalGraphics.EnableClick(shouldActive);
 	}
+
+	protected virtual void HandleLoadData() { }
+	protected virtual void HandleNewData() { }
 	#endregion
 }

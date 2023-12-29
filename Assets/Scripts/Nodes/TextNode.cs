@@ -15,8 +15,15 @@ public class TextNode : Node
 	{
 		base.Awake();
 		textField = GetComponentInChildren<TMP_InputField>(true);
+		textField.onValueChanged.AddListener(SaveNodeStringData);
 
 		DeselectNode();
+	}
+
+	protected override void OnDestroy()
+	{
+		base.OnDestroy();
+		textField.onValueChanged.RemoveListener(SaveNodeStringData);
 	}
 
 	public override void SelectNode()
@@ -32,5 +39,18 @@ public class TextNode : Node
 	{
 		base.DeselectNode();
 		textField.interactable = false;
+	}
+
+	protected override void HandleLoadData()
+	{
+		textField.text = nodeData.Content;
+	}
+
+	private void SaveNodeStringData(string stringData)
+	{
+		if (nodeData != null && nodeData.HasInitialized)
+		{
+			nodeData.Content = stringData;
+		}
 	}
 }

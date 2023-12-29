@@ -3,13 +3,16 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class CanvasNode : Node
 {
 	public delegate void CanvasNodeEvent(CanvasNode node);
 	public static event CanvasNodeEvent OnCanvasNodeSelected;
 
-	[Header("Debug: PageNode")]
+	[Header("Settings: CanvasNode")]
+	[SerializeField] private string defaultName = "New Canvas";
+	[Header("Debug: CanvasNode")]
 	[SerializeField, ReadOnly] private TMP_InputField textField;
 
 	public override NodeType NodeType => NodeType.Canvas;
@@ -18,8 +21,17 @@ public class CanvasNode : Node
 	{
 		base.Awake();
 		textField = GetComponentInChildren<TMP_InputField>(true);
+		textField.text = defaultName;
+
+		textField.onValueChanged.AddListener(SaveNodeStringData);
 
 		DeselectNode();
+	}
+
+	protected override void OnDestroy()
+	{
+		base.OnDestroy();
+		textField.onValueChanged.RemoveListener(SaveNodeStringData);
 	}
 
 	// HACK: on inspector Im manually selecting the input field because theres some weird behaviour
@@ -35,7 +47,7 @@ public class CanvasNode : Node
 		base.SelectNode();
 		textField.interactable = true;
 
-		if (textField.text == string.Empty || textField.text == "New Canvas")
+		if (textField.text == string.Empty || textField.text == defaultName)
 			textField.Select();
 	}
 
@@ -43,5 +55,23 @@ public class CanvasNode : Node
 	{
 		base.DeselectNode();
 		textField.interactable = false;
+	}
+
+	protected override void HandleNewData()
+	{
+		nodeData.Name = defaultName;
+	}
+
+	protected override void HandleLoadData()
+	{
+		textField.text = nodeData.Name;
+	}
+
+	private void SaveNodeStringData(string stringData)
+	{
+		if (nodeData != null && nodeData.HasInitialized)
+		{
+			nodeData.Name = stringData;
+		}
 	}
 }
