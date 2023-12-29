@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class TextNodeInputField : RequiresParent<TextNode>
 {
+	[SerializeField, ReadOnly] private ExternalGraphics externalGraphics;
 	[SerializeField, ReadOnly] private TMP_InputField inputField;
 	[SerializeField, ReadOnly] private int caretPos;
 	[SerializeField, ReadOnly] private int lengthForCaret;
@@ -16,8 +17,11 @@ public class TextNodeInputField : RequiresParent<TextNode>
 
 	private void Awake()
 	{
+		externalGraphics = GetComponent<ExternalGraphics>();
+
 		hasAddedNewLineWithEnter = false;
 		inputField = GetComponent<TMP_InputField>();
+		inputField.interactable = ParentComponent.IsSelected;
 
 		inputField.onValueChanged.AddListener(OnValueChanged);
 		inputField.onSubmit.AddListener(OnSubmit);
@@ -68,7 +72,15 @@ public class TextNodeInputField : RequiresParent<TextNode>
 		hasAddedNewLineWithEnter = false;
 
 		if (ParentComponent.NodeData != null && ParentComponent.NodeData.HasInitialized)
-			ParentComponent.NodeData.Content = stringData;
+		{
+			// using a temporary array because save data will only be saved automatically
+			// when actually changing the array values, not its children
+			string[] tempContent = new string[ParentComponent.InputFields.Count];
+			for (int i = 0; i < ParentComponent.InputFields.Count; i++)
+				tempContent[i] = ParentComponent.InputFields[i].text;
+			tempContent[FieldIndex] = stringData;
+			ParentComponent.NodeData.Content = tempContent;
+		}
 	}
 
 	private void OnSubmit(string submitValue)

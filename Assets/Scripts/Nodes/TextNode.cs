@@ -22,7 +22,7 @@ public class TextNode : Node
 	{
 		base.Awake();
 		selectedField = 0;
-		inputFields.Add(GetComponentInChildren<TMP_InputField>(true));
+		inputFields.AddIfNew(GetComponentInChildren<TMP_InputField>(true));
 
 		DeselectNode();
 	}
@@ -48,7 +48,14 @@ public class TextNode : Node
 
 	public void AddInputField(TMP_InputField field)
 	{
-		inputFields.Add(field);
+		inputFields.AddIfNew(field);
+		ExternalGraphics external = field.GetComponent<ExternalGraphics>();
+		if (external)
+			externalGraphics.AddIfNew(external);
+		
+		UnsubscribeToExternalEvents();
+		SubscribeToExternalEvents();
+
 		SelectField(field);
 	}
 
@@ -71,6 +78,19 @@ public class TextNode : Node
 
 	protected override void HandleLoadData()
 	{
-		inputFields[0].text = nodeData.Content;
+		if (nodeData.Content == null) return;
+		if (nodeData.Content.Length <= 0) return;
+
+		inputFields[0].text = nodeData.Content[0];
+
+		if (nodeData.Content.Length > 1)
+		{
+			for (int i = 1; i < nodeData.Content.Length; i++)
+			{
+				TMP_InputField field = Instantiate(InputFieldPrefab, FunctionalNode.transform);
+				AddInputField(field);
+				field.text = nodeData.Content[i];
+			}
+		}
 	}
 }
