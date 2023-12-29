@@ -10,45 +10,33 @@ public abstract class Node : Draggable, IPointerClickHandler
 	public static event NodeEvent OnAnyNodeDragEnd;
 
 	[Header("References: Node")]
-	[SerializeField] private GameObject visualNode;
-	[SerializeField] private GameObject functionalNode;
+	[SerializeField] protected GameObject visualNode;
+	[SerializeField] protected GameObject functionalNode;
 	[Header("Debug: Node")]
 	[SerializeField, ReadOnly] protected bool isSelected;
 	[SerializeField, ReadOnly] protected InfiniteCanvas parentCanvas;
 	[SerializeField, ReadOnly] protected NodeData nodeData;
 	[SerializeField, ReadOnly, ShowIf("useSelfRaycast")] protected Image backgroundImage;
-	[SerializeField, ReadOnly, HideIf("useSelfRaycast")] protected Image externBackgroundImage;
 
 	public abstract NodeType NodeType { get; }
+	public bool IsSelected => isSelected;
 	public NodeData NodeData => nodeData;
-	protected Image BackgroundImage
-	{
-		get
-		{
-			if (useSelfRaycast)
-			{
-				if (backgroundImage == null)
-					backgroundImage = GetComponent<Image>();
-				return backgroundImage;
-			}
-			else
-			{
-				if (externBackgroundImage == null)
-					externBackgroundImage = externalGraphics.GetComponent<Image>();
-				return externBackgroundImage;
-			}
-		}
-	}
+	public GameObject VisualNode => visualNode;
+	public GameObject FunctionalNode => functionalNode;
 
 	#region Unity Messages
 	protected override void Awake()
 	{
 		base.Awake();
 
+		backgroundImage = GetComponent<Image>();
 		ActiveFunctionalNode(false);
 
 		if (!useSelfRaycast)
-			externalGraphics.OnPointerClicked += OnPointerClick;
+		{
+			foreach (var externalGraphic in externalGraphics)
+				externalGraphic.OnPointerClicked += OnPointerClick;
+		}
 	}
 
 	protected override void OnDestroy()
@@ -56,7 +44,10 @@ public abstract class Node : Draggable, IPointerClickHandler
 		base.OnDestroy();
 
 		if (!useSelfRaycast)
-			externalGraphics.OnPointerClicked -= OnPointerClick;
+		{
+			foreach (var externalGraphic in externalGraphics)
+				externalGraphic.OnPointerClicked -= OnPointerClick;
+		}
 	}
 	#endregion
 
@@ -141,10 +132,19 @@ public abstract class Node : Draggable, IPointerClickHandler
 	{
 		visualNode.SetActive(!shouldActive);
 		functionalNode.SetActive(shouldActive);
-		BackgroundImage.raycastTarget = shouldActive;
+		if (backgroundImage != null)
+			backgroundImage.raycastTarget = shouldActive;
 		
 		if (!useSelfRaycast)
-			externalGraphics.EnableClick(shouldActive);
+		{
+			foreach (var externalGraphic in externalGraphics)
+			{
+				externalGraphic.EnableClick(shouldActive);
+				Image externBackground = externalGraphic.GetComponent<Image>();
+				if (externBackground != null)
+					externBackground.raycastTarget = shouldActive;
+			}
+		}
 	}
 
 	protected virtual void HandleLoadData() { }

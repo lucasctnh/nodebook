@@ -23,7 +23,7 @@ public class CanvasNode : Node
 		textField = GetComponentInChildren<TMP_InputField>(true);
 		textField.text = defaultName;
 
-		textField.onValueChanged.AddListener(SaveNodeStringData);
+		textField.onValueChanged.AddListener(OnValueChanged);
 
 		DeselectNode();
 	}
@@ -31,7 +31,7 @@ public class CanvasNode : Node
 	protected override void OnDestroy()
 	{
 		base.OnDestroy();
-		textField.onValueChanged.RemoveListener(SaveNodeStringData);
+		textField.onValueChanged.RemoveListener(OnValueChanged);
 	}
 
 	// HACK: on inspector Im manually selecting the input field because theres some weird behaviour
@@ -67,7 +67,7 @@ public class CanvasNode : Node
 		textField.text = nodeData.Name;
 	}
 
-	private void SaveNodeStringData(string stringData)
+	private void OnValueChanged(string stringData)
 	{
 		if (nodeData != null && nodeData.HasInitialized)
 		{

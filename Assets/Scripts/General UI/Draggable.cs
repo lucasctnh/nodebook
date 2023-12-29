@@ -14,7 +14,7 @@ public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDra
 
 	[Header("Settings: Draggable")]
 	[SerializeField] protected bool useSelfRaycast = true;
-	[SerializeField, HideIf("useSelfRaycast")] protected ExternalGraphics externalGraphics;
+	[SerializeField, HideIf("useSelfRaycast")] protected List<ExternalGraphics> externalGraphics = new List<ExternalGraphics>();
 	[Header("Debug: Draggable")]
 	[SerializeField, ReadOnly] protected Canvas canvas;
 	[SerializeField, ReadOnly] protected RectTransform rectTransform;
@@ -30,22 +30,12 @@ public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDra
 		canvas = GetComponentInParent<Canvas>();
 		rectTransform = GetComponent<RectTransform>();
 
-		if (!useSelfRaycast)
-		{
-			externalGraphics.OnBeginedDrag += OnBeginDrag;
-			externalGraphics.OnEndedDrag += OnEndDrag;
-			externalGraphics.OnDragging += OnDrag;
-		}
+		SubscribeToExternalEvents();
 	}
 
 	protected virtual void OnDestroy()
 	{
-		if (!useSelfRaycast)
-		{
-			externalGraphics.OnBeginedDrag -= OnBeginDrag;
-			externalGraphics.OnEndedDrag -= OnEndDrag;
-			externalGraphics.OnDragging -= OnDrag;
-		}
+		UnsubscribeToExternalEvents();
 	}
 
 	public virtual void OnBeginDrag(PointerEventData eventData)
@@ -70,5 +60,31 @@ public class Draggable : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDra
 
 		isDragging = false;
 		OnAnyEndDrag?.Invoke(this);
+	}
+
+	protected virtual void SubscribeToExternalEvents()
+	{
+		if (!useSelfRaycast)
+		{
+			foreach (var externalGraphic in externalGraphics)
+			{
+				externalGraphic.OnBeginedDrag += OnBeginDrag;
+				externalGraphic.OnEndedDrag += OnEndDrag;
+				externalGraphic.OnDragging += OnDrag;
+			}
+		}
+	}
+
+	protected virtual void UnsubscribeToExternalEvents()
+	{
+		if (!useSelfRaycast)
+		{
+			foreach (var externalGraphic in externalGraphics)
+			{
+				externalGraphic.OnBeginedDrag -= OnBeginDrag;
+				externalGraphic.OnEndedDrag -= OnEndDrag;
+				externalGraphic.OnDragging -= OnDrag;
+			}
+		}
 	}
 }

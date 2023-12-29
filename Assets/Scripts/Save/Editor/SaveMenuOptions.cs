@@ -28,4 +28,10 @@ public class SaveMenuOptions
 
 		Debug.Log("Cleared all saves.");
 	}
+
+	[MenuItem("Volphin/Open PersistentPath")]
+	static void OpenPersistentPath()
+	{
+		EditorUtility.RevealInFinder(Application.persistentDataPath);
+	}
 }

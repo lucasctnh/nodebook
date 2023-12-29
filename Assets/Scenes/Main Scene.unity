@@ -1568,7 +1568,7 @@ MonoBehaviour:
     parentCanvasId: 
     name: 
     content: 
-    position: {x: 0, y: 0, z: 0}
+    position: {x: 0, y: 0}
     type: 0
     nodes: []
 --- !u!1 &1288383111
