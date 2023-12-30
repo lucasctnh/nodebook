@@ -54,7 +54,10 @@ public class TextNode : Node
 			externalGraphics.AddIfNew(external);
 		
 		UnsubscribeToExternalEvents();
+		UnsubscribeToExternalSelect();
+
 		SubscribeToExternalEvents();
+		SubscribeToExternalSelect();
 
 		SelectField(field);
 	}

@@ -1567,7 +1567,7 @@ MonoBehaviour:
     hasInitialized: 0
     parentCanvasId: 
     name: 
-    content: 
+    content: []
     position: {x: 0, y: 0}
     type: 0
     nodes: []

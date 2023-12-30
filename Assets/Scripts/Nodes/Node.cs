@@ -32,22 +32,13 @@ public abstract class Node : Draggable, IPointerClickHandler
 		backgroundImage = GetComponent<Image>();
 		ActiveFunctionalNode(false);
 
-		if (!useSelfRaycast)
-		{
-			foreach (var externalGraphic in externalGraphics)
-				externalGraphic.OnPointerClicked += OnPointerClick;
-		}
+		SubscribeToExternalSelect();
 	}
 
 	protected override void OnDestroy()
 	{
 		base.OnDestroy();
-
-		if (!useSelfRaycast)
-		{
-			foreach (var externalGraphic in externalGraphics)
-				externalGraphic.OnPointerClicked -= OnPointerClick;
-		}
+		UnsubscribeToExternalSelect();
 	}
 	#endregion
 
@@ -149,5 +140,23 @@ public abstract class Node : Draggable, IPointerClickHandler
 
 	protected virtual void HandleLoadData() { }
 	protected virtual void HandleNewData() { }
+
+	protected virtual void SubscribeToExternalSelect()
+	{
+		if (!useSelfRaycast)
+		{
+			foreach (var externalGraphic in externalGraphics)
+				externalGraphic.OnPointerClicked += OnPointerClick;
+		}
+	}
+
+	protected virtual void UnsubscribeToExternalSelect()
+	{
+		if (!useSelfRaycast)
+		{
+			foreach (var externalGraphic in externalGraphics)
+				externalGraphic.OnPointerClicked -= OnPointerClick;
+		}
+	}
 	#endregion
 }
