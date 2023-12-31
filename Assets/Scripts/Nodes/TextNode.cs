@@ -8,21 +8,21 @@ using UnityEngine;
 public class TextNode : Node
 {
 	[Header("References: TextNode")]
-	[SerializeField] private TMP_InputField inputFieldPrefab;
+	[SerializeField] protected TextNodeInputField inputFieldPrefab;
 	[Header("Debug: TextNode")]
-	[SerializeField, ReadOnly] private List<TMP_InputField> inputFields = new List<TMP_InputField>();
-	[SerializeField, ReadOnly] private int selectedField;
+	[SerializeField, ReadOnly] protected List<TextNodeInputField> inputFields = new List<TextNodeInputField>();
+	[SerializeField, ReadOnly] protected int selectedField;
 
 	public override NodeType NodeType => NodeType.Text;
-	public List<TMP_InputField> InputFields => inputFields;
-	public TMP_InputField InputFieldPrefab => inputFieldPrefab;
+	public virtual List<TextNodeInputField> InputFields => inputFields;
+	public TextNodeInputField InputFieldPrefab => inputFieldPrefab;
 	public int SelectedField => selectedField;
 
 	protected override void Awake()
 	{
 		base.Awake();
 		selectedField = 0;
-		inputFields.AddIfNew(GetComponentInChildren<TMP_InputField>(true));
+		inputFields.AddIfNew(GetComponentInChildren<TextNodeInputField>(true));
 
 		DeselectNode();
 	}
@@ -33,20 +33,20 @@ public class TextNode : Node
 
 		base.SelectNode();
 		foreach (var field in inputFields)
-			field.interactable = true;
+			field.InputField.interactable = true;
 
-		if (inputFields[0].text == string.Empty && inputFields.Count <= 1)
-			inputFields[0].Select();
+		if (inputFields[0].InputField.text == string.Empty && inputFields.Count <= 1)
+			inputFields[0].InputField.Select();
 	}
 
 	public override void DeselectNode()
 	{
 		base.DeselectNode();
         foreach (var field in inputFields)
-			field.interactable = false;
+			field.InputField.interactable = false;
 	}
 
-	public void AddInputField(TMP_InputField field)
+	public void AddInputField(TextNodeInputField field)
 	{
 		inputFields.AddIfNew(field);
 		ExternalGraphics external = field.GetComponent<ExternalGraphics>();
@@ -62,9 +62,9 @@ public class TextNode : Node
 		SelectField(field);
 	}
 
-	public void SelectField(TMP_InputField field)
+	public void SelectField(TextNodeInputField field)
 	{
-		field.ActivateInputField();
+		field.InputField.ActivateInputField();
 		selectedField = inputFields.IndexOf(field);
 	}
 
@@ -75,7 +75,7 @@ public class TextNode : Node
 		if (index >= inputFields.Count)
 			index = inputFields.Count - 1;
 
-		inputFields[index].ActivateInputField();
+		inputFields[index].InputField.ActivateInputField();
 		selectedField = index;
 	}
 
@@ -84,15 +84,15 @@ public class TextNode : Node
 		if (nodeData.Content == null) return;
 		if (nodeData.Content.Length <= 0) return;
 
-		inputFields[0].text = nodeData.Content[0];
+		inputFields[0].HandleLoadData(nodeData.Content[0]);
 
 		if (nodeData.Content.Length > 1)
 		{
 			for (int i = 1; i < nodeData.Content.Length; i++)
 			{
-				TMP_InputField field = Instantiate(InputFieldPrefab, FunctionalNode.transform);
+				TextNodeInputField field = Instantiate(InputFieldPrefab, FunctionalNode.transform);
 				AddInputField(field);
-				field.text = nodeData.Content[i];
+				field.HandleLoadData(nodeData.Content[i]);
 			}
 		}
 	}
