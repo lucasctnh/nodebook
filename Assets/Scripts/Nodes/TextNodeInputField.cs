@@ -152,9 +152,10 @@ public class TextNodeInputField : RequiresParent<TextNode>
 		if (inputField.text == null || inputField.text.Length < 2) return;
 
 		if (inputField.text[0] == '-' && inputField.text[1] == ' ')
+		{
 			inputField.text = "<style=\"Bullet\">";
-
-		inputField.caretPosition = inputField.text.Length - 1;
+			inputField.caretPosition = inputField.text.Length;
+		}
 	}
 	#endregion
 }
