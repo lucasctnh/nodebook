@@ -7,13 +7,17 @@ public abstract class Node : Draggable, IPointerClickHandler
 {
 	public delegate void NodeEvent(Node node);
 	public static event NodeEvent OnAnyNodeSelected;
+	public static event NodeEvent OnAnyNodeDragBegin;
 	public static event NodeEvent OnAnyNodeDragEnd;
+	public static event NodeEvent OnAnyNodeDragEndBeforeSave; 
+	public static event NodeEvent OnAnyNodeDeleted;
 
 	[Header("References: Node")]
 	[SerializeField] protected GameObject visualNode;
 	[SerializeField] protected GameObject functionalNode;
 	[Header("Debug: Node")]
 	[SerializeField, ReadOnly] protected bool isSelected;
+	[SerializeField, ReadOnly] protected bool willBeDestroyed;
 	[SerializeField, ReadOnly] protected InfiniteCanvas parentCanvas;
 	[SerializeField, ReadOnly] protected NodeData nodeData;
 	[SerializeField, ReadOnly, ShowIf("useSelfRaycast")] protected Image backgroundImage;
@@ -23,6 +27,11 @@ public abstract class Node : Draggable, IPointerClickHandler
 	public NodeData NodeData => nodeData;
 	public GameObject VisualNode => visualNode;
 	public GameObject FunctionalNode => functionalNode;
+	public bool WillBeDestroyed
+	{
+		get => willBeDestroyed;
+		set => willBeDestroyed = value;
+	}
 
 	#region Unity Messages
 	protected override void Awake()
@@ -51,11 +60,18 @@ public abstract class Node : Draggable, IPointerClickHandler
 	#endregion
 
 	#region Override Methods
+	public override void OnBeginDrag(PointerEventData eventData)
+	{
+		base.OnBeginDrag(eventData);
+		OnAnyNodeDragBegin?.Invoke(this);
+	}
+
 	public override void OnEndDrag(PointerEventData eventData)
 	{
 		base.OnEndDrag(eventData);
+		OnAnyNodeDragEndBeforeSave?.Invoke(this);
 
-		if (nodeData != null)
+		if (nodeData != null && willBeDestroyed == false)
 		{
 			nodeData.AnchoredPosition = rectTransform.anchoredPosition;
 			nodeData.RegenerateId();
@@ -86,6 +102,10 @@ public abstract class Node : Draggable, IPointerClickHandler
 	public virtual void DestroyNode()
 	{
 		DeselectNode();
+
+		SaveManager.Delete(nodeData);
+		OnAnyNodeDeleted?.Invoke(this);
+
 		Destroy(gameObject);
 	}
 

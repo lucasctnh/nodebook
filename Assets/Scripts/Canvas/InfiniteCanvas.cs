@@ -38,6 +38,7 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		ToolbarNode.OnAnyNodeShouldBeCreated += AddNode;
 		Node.OnAnyNodeSelected += DeselectAllNodes;
 		Node.OnAnyNodeDragEnd += CheckValidPosition;
+		Node.OnAnyNodeDeleted += RemoveNodeFromCanvas;
 		NodeData.OnRegeneratedId += SaveNodesList;
 	}
 
@@ -49,6 +50,7 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		ToolbarNode.OnAnyNodeShouldBeCreated -= AddNode;
 		Node.OnAnyNodeSelected -= DeselectAllNodes;
 		Node.OnAnyNodeDragEnd -= CheckValidPosition;
+		Node.OnAnyNodeDeleted -= RemoveNodeFromCanvas;
 		NodeData.OnRegeneratedId -= SaveNodesList;
 	}
 
@@ -211,6 +213,8 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	#region Private Methods
 	private void CheckValidPosition(Node nodeInstance)
 	{
+		if (nodeInstance.WillBeDestroyed) return;
+
 		RectTransform rectTransform = nodeInstance.RectTransform;
 
 		Vector2 overlapDir = Overlap(rectTransform);
@@ -254,7 +258,12 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	{
 		if (canvasData == null) return;
 		if (Nodes == null) return;
-		if (Nodes.Count <= 0) return;
+
+		if (Nodes.Count == 0)
+		{
+			canvasData.Nodes = new string[0];
+			return;
+		}
 
 		// using a temporary array because save data will only be saved automatically
 		// when actually changing the array values, not its children
@@ -262,6 +271,12 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		for (int i = 0; i < Nodes.Count; i++)
 			tempNodes[i] = Nodes[i].NodeData.Id;
 		canvasData.Nodes = tempNodes;
+	}
+
+	private void RemoveNodeFromCanvas(Node node)
+	{
+		Nodes.Remove(node);
+		SaveNodesList();
 	}
 	#endregion
 }
