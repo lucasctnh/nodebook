@@ -85,6 +85,11 @@ public class TodoInputField : TextNodeInputField
 			ParentComponent.NodeData.Content = tempContent;
 		}
 	}
+
+	protected override void HandleBulletPoint()
+	{
+		// avoids bullet point on todo notes
+	}
 	#endregion
 
 	#region Private Methods

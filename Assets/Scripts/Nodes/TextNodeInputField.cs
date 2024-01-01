@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
 public class TextNodeInputField : RequiresParent<TextNode>
@@ -58,10 +59,7 @@ public class TextNodeInputField : RequiresParent<TextNode>
 		lengthForCaret = inputField.text.Replace("\n", "").Replace("<br>", "").Length;
 
 		HandleNavigationThroughFields();
-		HandleIdentation();
-
-		IdentifyBulletPoint();
-		IdentifyTodo();
+		HandleBulletPoint();
 	}
 	#endregion
 
@@ -148,22 +146,15 @@ public class TextNodeInputField : RequiresParent<TextNode>
 			}
 		}
 	}
-	#endregion
 
-	#region Private Methods
-	private void HandleIdentation()
+	protected virtual void HandleBulletPoint()
 	{
+		if (inputField.text == null || inputField.text.Length < 2) return;
 
-	}
+		if (inputField.text[0] == '-' && inputField.text[1] == ' ')
+			inputField.text = "<style=\"Bullet\">";
 
-	private void IdentifyBulletPoint()
-	{
-
-	}
-
-	private void IdentifyTodo()
-	{
-
+		inputField.caretPosition = inputField.text.Length - 1;
 	}
 	#endregion
 }
