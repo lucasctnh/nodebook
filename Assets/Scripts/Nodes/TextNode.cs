@@ -27,6 +27,18 @@ public class TextNode : Node
 		DeselectNode();
 	}
 
+	protected virtual void Update()
+	{
+		float greaterHeight = 0f;
+		foreach (RectTransform child in rectTransform)
+		{
+			if (child.rect.height > greaterHeight)
+				greaterHeight = child.rect.height;
+		}
+
+		rectTransform.sizeDelta = new Vector2(rectTransform.rect.width, greaterHeight);
+	}
+
 	public override void SelectNode()
 	{
 		if (isSelected) return;

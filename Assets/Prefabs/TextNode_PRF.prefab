@@ -305,6 +305,7 @@ MonoBehaviour:
   inputField: {fileID: 0}
   caretPos: 0
   lengthForCaret: 0
+  textLength: 0
   hasAddedNewLineWithEnter: 0
 --- !u!1 &3850081843032893487
 GameObject:
