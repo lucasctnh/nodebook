@@ -23,6 +23,7 @@ public class NodeData : ISaveData
 	[SerializeField] protected string[] content;
 	[SerializeField] protected Vector2 position;
 	[SerializeField] protected NodeType type;
+	[SerializeField] protected string[] nodes;
 
 	public virtual string Id { get => id; set { id = value; SaveManager.Save(this); } }
 	public virtual bool HasInitialized { get => hasInitialized; set { hasInitialized = value; SaveManager.Save(this); } }
@@ -31,6 +32,7 @@ public class NodeData : ISaveData
 	public virtual string[] Content { get => content; set { content = value; SaveManager.Save(this); } }
 	public virtual Vector2 AnchoredPosition { get => position; set { position = value; SaveManager.Save(this); } }
 	public virtual NodeType Type { get => type; set { type = value; SaveManager.Save(this); } }
+	public virtual string[] Nodes { get => nodes; set { nodes = value; SaveManager.Save(this); } }
 
 	public NodeData() { }
 	public NodeData(NodeType type, Vector2 anchoredPosition, string parentCanvasId)
@@ -63,18 +65,9 @@ public class NodeData : ISaveData
 	}
 }
 
-[Serializable]
-public class CanvasData : NodeData
-{
-	[SerializeField] protected string[] nodes;
-
-	public virtual string[] Nodes { get => nodes; set { nodes = value; SaveManager.Save(this); } }
-
-	public CanvasData() { }
-}
 
 [Serializable]
-public class HomeData : CanvasData
+public class HomeData : NodeData
 {
 	private const string Secret = "Aww shit, here we go again";
 	private const string ConstName = "Home";

@@ -21,9 +21,9 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	[SerializeField] private float uniformGrowIncrement = 25;
 	[Header("Debug")]
 	[SerializeField, ReadOnly] private List<Node> nodes = new List<Node>();
-	[SerializeField, ReadOnly] private CanvasData canvasData;
+	[SerializeField, ReadOnly] private NodeData canvasData;
 
-	public CanvasData CanvasData => canvasData;
+	public NodeData CanvasData => canvasData;
 	public RectTransform Content => content;
 	public List<Node> Nodes => nodes;
 
@@ -32,7 +32,7 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	{
 		base.Awake();
 
-		TopPanel.OnShowInfiniteCanvasEvent += Show;
+		TopPanel.OnShowHomeEvent += Show;
 		CanvasNode.OnCanvasNodeSelected += Show;
 		PageCanvas.OnAnyPageCanvasShow += Hide;
 		ToolbarNode.OnAnyNodeShouldBeCreated += AddNode;
@@ -44,7 +44,7 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 
 	private void OnDestroy()
 	{
-		TopPanel.OnShowInfiniteCanvasEvent -= Show;
+		TopPanel.OnShowHomeEvent -= Show;
 		CanvasNode.OnCanvasNodeSelected -= Show;
 		PageCanvas.OnAnyPageCanvasShow -= Hide;
 		ToolbarNode.OnAnyNodeShouldBeCreated -= AddNode;
@@ -231,10 +231,24 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 
 	private void DeselectAllNodes(Node node) => DeselectAllNodes();
 	private void Hide(PageCanvas pageCanvas) => Hide();
-	private void Show(CanvasNode canvasNode) => Show();
+	private void Show(CanvasNode canvasNode)
+	{
+		LoadCanvasData(canvasNode.NodeData.Id);
+		Show();
+	}
+	private void Show(string id)
+	{
+		if (id == null)
+			LoadHomeData();
+		else
+			LoadCanvasData(id);
+
+		Show();
+	}
 
 	private void LoadHomeData()
 	{
+		ClearCanvasContent();
 		canvasData = SaveManager.Load<HomeData>(HomeData.IdStatic);
 
 		if (canvasData == null)
@@ -252,6 +266,32 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 				AddNode(nodesLibrary.Library[nodeData.Type], nodeData);
 			}
 		}
+
+		SaveNodesList();
+	}
+
+	private void LoadCanvasData(string id)
+	{
+		ClearCanvasContent();
+		canvasData = SaveManager.Load<NodeData>(id);
+
+		if (canvasData == null)
+		{
+			canvasData = new NodeData();
+			canvasData.HasInitialized = true;
+		}
+
+		if (canvasData.Nodes != null && canvasData.Nodes.Length > 0)
+		{
+			for (int i = 0; i < canvasData.Nodes.Length; i++)
+			{
+				string nodeId = canvasData.Nodes[i];
+				NodeData nodeData = SaveManager.Load<NodeData>(nodeId);
+				AddNode(nodesLibrary.Library[nodeData.Type], nodeData);
+			}
+		}
+
+		SaveNodesList();
 	}
 
 	private void SaveNodesList()
@@ -278,5 +318,13 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 		Nodes.Remove(node);
 		SaveNodesList();
 	}
+
+	private void ClearCanvasContent()
+	{
+        foreach (Transform child in content.transform)
+			Destroy(child.gameObject);
+
+		Nodes.Clear();
+    }
 	#endregion
 }

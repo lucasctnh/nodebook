@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 public class TopPanel : MonoBehaviour
 {
-	public delegate void TopPanelEvent();
-	public static event TopPanelEvent OnShowInfiniteCanvasEvent;
+	public delegate void TopPanelEvent(string canvasId);
+	public static event TopPanelEvent OnShowHomeEvent;
 
 	[Header("References")]
 	[SerializeField] private Button homeButton;
@@ -15,13 +15,13 @@ public class TopPanel : MonoBehaviour
 	private void Awake()
 	{
 		Assert.IsNotNull(homeButton);
-		homeButton.onClick.AddListener(RaiseShowInifiniteCanvasEvent);
+		homeButton.onClick.AddListener(RaiseShowHomeEvent);
 	}
 
 	private void OnDestroy()
 	{
-		homeButton.onClick.RemoveListener(RaiseShowInifiniteCanvasEvent);
+		homeButton.onClick.RemoveListener(RaiseShowHomeEvent);
 	}
 
-	private void RaiseShowInifiniteCanvasEvent() => OnShowInfiniteCanvasEvent?.Invoke();
+	private void RaiseShowHomeEvent() => OnShowHomeEvent?.Invoke(null);
 }
