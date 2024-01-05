@@ -2,6 +2,7 @@ using NaughtyAttributes;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class PageCanvas : BaseCanvas
@@ -45,21 +46,26 @@ public class PageCanvas : BaseCanvas
 	#region Private Methods
 	private void ShowCanvas(PageNode node)
 	{
-		pageData = node.NodeData;
-		if (pageData.Content != null && pageData.Content[0] != string.Empty)
-			inputField.text = pageData.Content[0];
-
 		Show();
+		LoadPageData(node);
 	}
 
 	private void HideCanvas(InfiniteCanvas canvas) => Hide();
 
+	private void LoadPageData(PageNode node)
+	{
+		pageData = node.NodeData;
+		if (pageData.Content != null && pageData.Content[0] != string.Empty)
+			inputField.text = pageData.Content[0];
+		else
+			inputField.text = "";
+	}
+
 	private void SavePageData(string data)
 	{
-		if (pageData.Content == null)
-			pageData.Content = new string[1];
-
-		pageData.Content[0] = data;
+		string[] tempArr = new string[1];
+		tempArr[0] = data;
+		pageData.Content = tempArr;
 	}
 	#endregion
 }

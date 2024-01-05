@@ -59,7 +59,6 @@ public class PageNode : Node
 	protected override void HandleNewData()
 	{
 		nodeData.Name = defaultName;
-		nodeData.Content = new string[1];
 	}
 
 	protected override void HandleLoadData()
