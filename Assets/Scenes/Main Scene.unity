@@ -389,6 +389,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   startsHidden: 1
   isShown: 0
+  pageData:
+    id: 
+    hasInitialized: 0
+    parentCanvasId: 
+    name: 
+    content: []
+    position: {x: 0, y: 0}
+    type: 0
+    nodes: []
+  inputField: {fileID: 0}
 --- !u!114 &252470445
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1960,6 +1970,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   homeButton: {fileID: 250137192}
+  dividerPrefab: {fileID: 3530636420491466839, guid: f6b3286aab969e34dba6b2140bc2c5a6, type: 3}
+  navButtonPrefab: {fileID: 5770629563677057472, guid: 0a3feee72b7000c4bacb77b9df1b3fd6, type: 3}
 --- !u!1 &1491922657
 GameObject:
   m_ObjectHideFlags: 0
