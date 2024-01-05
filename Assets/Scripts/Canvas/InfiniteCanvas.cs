@@ -233,17 +233,17 @@ public class InfiniteCanvas : BaseCanvas, IPointerEnterHandler, IPointerExitHand
 	private void Hide(PageCanvas pageCanvas) => Hide();
 	private void Show(CanvasNode canvasNode)
 	{
-		LoadCanvasData(canvasNode.NodeData.Id);
 		Show();
+		LoadCanvasData(canvasNode.NodeData.Id);
 	}
 	private void Show(string id)
 	{
+		Show();
+
 		if (id == null)
 			LoadHomeData();
 		else
 			LoadCanvasData(id);
-
-		Show();
 	}
 
 	private void LoadHomeData()
